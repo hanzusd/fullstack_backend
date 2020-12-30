@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 
+app.use(express.json()) 
+
 let persons = [
           { 
             id: 1,
@@ -19,7 +21,7 @@ let persons = [
           },
           { 
             id: 4,
-            name: "Mary Poppendieck", 
+            name: "Mary Poppendick", 
             number: "39-23-6423122"
           }
   ]
@@ -43,11 +45,39 @@ let persons = [
     const id =  Number(req.params.id)
     const person = persons.find(person => person.id === id)
     if(!person) {
-        res.status(404)
-        res.send('Person not found')
+        res.status(404).json({
+            error: 'person not found'
+        })
     } else {
     res.json(person)
     }
+  })
+
+  app.delete('/api/persons/:id', (req, res) => {
+    const id = Number(req.params.id)
+    persons = persons.filter(person => person.id !== id)
+  
+    res.status(204).end()
+  })
+
+  app.post('/api/persons', (req, res) => {
+    const person = req.body
+    person.id = Math.floor(Math.random() * 500)
+
+    if ((!person.name) || (!person.number)) {
+        return res.status(400).json({ 
+          error: 'content missing' 
+        })
+    }
+    const names = persons.map(persons => persons.name)
+    
+    if(names.includes(person.name)) {
+        return res.status(400).json({ 
+            error: 'name must be unique' 
+          })
+    }
+
+    res.json(person)
   })
 
 const port = 3001
